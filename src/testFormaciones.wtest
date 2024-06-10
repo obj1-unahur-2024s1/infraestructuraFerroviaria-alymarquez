@@ -1,0 +1,75 @@
+import vagones.*
+import formacion.*
+import locomotoras.*
+import deposito.*
+
+describe "formaciones" {
+	const vP = new VagonesPasajeros(ancho = 4, largo = 10, estaOrdenado = true, tieneBanios = true)
+	const vP2 = new VagonesPasajeros(ancho = 2, largo = 7, estaOrdenado = false, tieneBanios = false)
+	const vC = new VagonesCarga(cargaMaxIdeal = 6800, maderasSueltas = 5)
+	const vD = new VagonesDormitorio(compartimientos = 8, camasEnCompartimiento = 3)
+	var locomotora1 = new Locomotoras(peso = 3000, arrastre = 20000, velocidadMaxima = 300)
+	var locomotora2 = new Locomotoras(peso = 5000, arrastre = 22000, velocidadMaxima = 300)
+	var tren = new Formacion(vagones = [vP, vP2, vC, vD])
+
+	test "vagones pasajeros 1"{
+		assert.equals(100, vP.maximoPasajeros())
+		assert.equals(10300, vP.pesoMaximo())
+		assert.equals(300, vP.maximoCarga())
+		assert.that(vP.tieneBanios())
+	}
+
+	test "vagones pasajeros 2"{
+		assert.equals(41, vP2.maximoPasajeros())
+		assert.equals(6080, vP2.pesoMaximo())
+		assert.equals(800, vP2.maximoCarga())
+		assert.that(not vP2.tieneBanios())
+	}
+
+	test "vagon con carga"{
+		assert.equals(0, vC.maximoPasajeros())
+		assert.equals(6300, vC.pesoMaximo())
+		assert.equals(4800, vC.maximoCarga())
+		assert.that(not vC.tieneBanios())
+	}
+
+	test "vagon con dormitorio"{
+		assert.equals(24, vD.maximoPasajeros())
+		assert.equals(7120, vD.pesoMaximo())
+		assert.equals(1200, vD.maximoCarga())
+		assert.that(vD.tieneBanios())
+	}
+	
+	test "tren antes del mantenimiento"{
+		assert.equals(165, tren.maximoPasajeros())
+		assert.equals(1, tren.vagonesPopulares())
+		assert.that(not tren.formacionCarguera())
+		assert.equals(4220, tren.dispersionDePesos())
+		assert.equals(2, tren.cantidadBanios())
+	}
+
+	test "tren despues de mantenimiento"{
+		tren.hacerMantenimiento()
+		assert.equals(180, tren.maximoPasajeros())
+		assert.equals(2, tren.vagonesPopulares())
+		assert.that(not tren.formacionCarguera())
+		assert.equals(3200, tren.dispersionDePesos())
+		assert.equals(2, tren.cantidadBanios())
+	}
+	
+	test "tren con locomotora1"{
+		tren.agregarLocomotora(locomotora1)
+		assert.that(tren.esEficiente())
+		assert.that(not tren.puedeMoverse())
+		assert.equals(12800, tren.kilosDeEmpujeQueFaltan())
+	}
+	
+	test "tren con locomotora1 y 2"{
+		tren.agregarLocomotora(locomotora1)
+		tren.agregarLocomotora(locomotora2)
+		assert.that(not tren.esEficiente())
+		assert.that(tren.puedeMoverse())
+		assert.equals(0, tren.kilosDeEmpujeQueFaltan())
+	}
+
+}
